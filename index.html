@@ -78,19 +78,19 @@
 
             /* --- PENGATURAN HALAMAN 6 (ALAMAT, MAPS, LOVE) --- */
             /* 1. Alamat (CUSTOM UKURAN & POSISI ATAS/BAWAH DIMAINKAN DI SINI) */
-            --p6-alamat-top: -98px;                /* Sesuaikan posisi atas/bawah (misal: -10px, 15px, dll) */
+            --p6-alamat-top: -98px;                /* Sesuaikan posisi atas/bawah */
             --p6-alamat-width: 100%;             /* Lebar relatif alamat */
             --p6-alamat-max-width: 100%;         /* Ukuran maksimal lebar alamat */
             --p6-alamat-margin: 0 auto;          /* Jarak margin */
 
             /* 2. Maps (CUSTOM UKURAN & POSISI ATAS/BAWAH DIMAINKAN TERPISAH DI SINI) */
-            --p6-maps-top: -87px;               /* Sesuaikan posisi atas/bawah (misal: 10px, -5px, dll) */
+            --p6-maps-top: -87px;               /* Sesuaikan posisi atas/bawah */
             --p6-maps-width: 45%;                /* Lebar relatif tombol maps */
             --p6-maps-max-width: 250px;          /* Ukuran maksimal lebar maps */
             --p6-maps-margin: 15px auto;         /* Jarak margin */
 
             /* 3. Love (CUSTOM UKURAN & POSISI ATAS/BAWAH DIMAINKAN DI SINI) */
-            --p6-love-top: 190px;                  /* Sesuaikan posisi atas/bawah (misal: -20px, 10px, dll) */
+            --p6-love-top: 190px;                  /* Sesuaikan posisi atas/bawah */
             --p6-love-width: 100%;               /* Lebar relatif love */
             --p6-love-max-width: 100%;           /* Ukuran maksimal lebar love */
             --p6-love-margin: 0 auto;            /* Jarak margin */
@@ -573,11 +573,23 @@
         #page6 {
             padding: 0;
             background-color: transparent !important;
-            height: auto;
+            height: 100vh;
+            height: 100dvh;
             min-height: 100vh;
             min-height: 100dvh;
+            display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
+        }
+
+        .p6-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .p6-alamat-img {
@@ -1289,13 +1301,15 @@
 
                 <!-- HALAMAN 6 (ALAMAT, MAPS, LOVE - FULL CUSTOM SIZING) -->
                 <section class="page" id="page6">
-                    <img src="alamat.png" class="p6-alamat-img p6-anim p6-anim-top p6-delay-1" alt="Alamat">
+                    <div class="p6-wrapper">
+                        <img src="alamat.png" class="p6-alamat-img p6-anim p6-anim-top p6-delay-1" alt="Alamat">
 
-                    <a href="https://maps.app.goo.gl/rVddxVUVDKyKrrJb8" target="_blank" class="p6-maps-link p6-anim p6-anim-scale p6-delay-2">
-                        <img src="maps.png" alt="Lihat Lokasi">
-                    </a>
+                        <a href="https://maps.app.goo.gl/rVddxVUVDKyKrrJb8" target="_blank" class="p6-maps-link p6-anim p6-anim-scale p6-delay-2">
+                            <img src="maps.png" alt="Lihat Lokasi">
+                        </a>
 
-                    <img src="love.png" class="p6-love-img p6-anim p6-anim-bottom p6-delay-3" alt="Love">
+                        <img src="love.png" class="p6-love-img p6-anim p6-anim-bottom p6-delay-3" alt="Love">
+                    </div>
                 </section>
 
                 <!-- HALAMAN 7 (STORY) -->
@@ -1785,48 +1799,43 @@
             const inputMesej = document.getElementById('rsvp-message');
             const btnSubmit = document.getElementById('btn-submit-rsvp');
 
-            if (!inputNama || !inputStatus || !inputMesej) return;
+            if (!inputNama || !inputStatus || !inputMesej || !btnSubmit) return;
 
             const nama = inputNama.value.trim();
             const status = inputStatus.value;
             const teks = inputMesej.value.trim();
 
             if (!nama || !teks) {
-                alert("Silakan isi Nama dan Ucapan Anda terlebih dahulu.");
+                alert("Harap isi nama dan ucapan Anda!");
                 return;
             }
 
             btnSubmit.disabled = true;
             btnSubmit.innerText = "Mengirim...";
 
-            const formData = new FormData();
-            formData.append('nama', nama);
-            formData.append('status', status);
-            formData.append('teks', teks);
+            const payload = { nama: nama, status: status, teks: teks };
 
             fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: formData
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
             })
             .then(() => {
-                dataUcapan.unshift({ nama, status, teks });
-                inputNama.value = "";
-                inputMesej.value = "";
+                dataUcapan.unshift({ nama: nama, status: status, teks: teks });
                 ucapanCurrentPage = 1;
                 renderUcapan();
-            })
-            .catch(err => {
-                console.error("Error saat mengirim:", err);
-                dataUcapan.unshift({ nama, status, teks });
-                inputNama.value = "";
+
                 inputMesej.value = "";
-                ucapanCurrentPage = 1; 
-                renderUcapan();
-            })
-            .finally(() => {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "Kirim";
+                alert("Terima kasih! Ucapan Anda telah berhasil terkirim.");
+            })
+            .catch(err => {
+                console.error("Gagal mengirim ucapan:", err);
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Kirim";
+                alert("Gagal mengirim ucapan. Silakan coba lagi.");
             });
         }
     </script>
